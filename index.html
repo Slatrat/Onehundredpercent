@@ -1,0 +1,47 @@
+const months = [
+    "january", "february", "march", "april",
+    "may", "june", "july", "august",
+    "september", "october", "november", "december"
+];
+
+function getDateSegment(day) {
+    if (day <= 14) return "1_14";
+    if (day <= 31) return "15_31";
+    if (day <= 28) return "15_28"; // for February
+    return "";
+}
+
+function loadEntries(month, segment, callback) {
+    fetch(`databases/${month}_${segment}.json`)
+        .then(response => response.json())
+        .then(data => callback(data))
+        .catch(error => console.error('Error loading entries:', error));
+}
+
+let currentDate = new Date();
+let currentMonth = months[currentDate.getMonth()];
+let currentSegment = getDateSegment(currentDate.getDate());
+let currentIndex = currentDate.getDate() - 1;
+
+function displayEntry(entries, index) {
+    document.getElementById('headline').innerText = entries[index].headline;
+    document.getElementById('summary').innerText = entries[index].summary;
+}
+
+function prevEntry(entries) {
+    currentIndex = (currentIndex > 0) ? currentIndex - 1 : entries.length - 1;
+    displayEntry(entries, currentIndex);
+}
+
+function nextEntry(entries) {
+    currentIndex = (currentIndex < entries.length - 1) ? currentIndex + 1 : 0;
+    displayEntry(entries, currentIndex);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadEntries(currentMonth, currentSegment, (entries) => {
+        displayEntry(entries, currentIndex);
+        document.getElementById('prev').addEventListener('click', () => prevEntry(entries));
+        document.getElementById('next').addEventListener('click', () => nextEntry(entries));
+    });
+});
